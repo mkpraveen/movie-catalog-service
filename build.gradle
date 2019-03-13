@@ -9,6 +9,12 @@ group = 'org.praveenmk.microservice.learn'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '1.8'
 
+
+ext {
+	set('springCloudVersion', 'Greenwich.SR1')
+}
+
+
 repositories {
 	mavenCentral()
 }
@@ -18,4 +24,12 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'io.projectreactor:reactor-test'
+	
+	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
+}
+
+dependencyManagement {
+	imports {
+		mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+	}
 }

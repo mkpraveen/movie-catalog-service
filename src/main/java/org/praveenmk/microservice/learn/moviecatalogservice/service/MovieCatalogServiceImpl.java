@@ -22,7 +22,7 @@ public class MovieCatalogServiceImpl implements MovieCatalogService{
 
 		// Get movie details
 		MovieDetails movieDetails = restTemplate
-				.getForObject("http://movie-details.local.pcfdev.io/jpamovies/" + movieId, MovieDetails.class);
+				.getForObject("http://movie-details-service/jpamovies/" + movieId, MovieDetails.class);
 		movieCatalog.setMovieId(movieId);
 		movieCatalog.setMovieDesc(movieDetails.getMovieDescription());
 		movieCatalog.setMovieName(movieDetails.getMovieName());
@@ -30,7 +30,7 @@ public class MovieCatalogServiceImpl implements MovieCatalogService{
 
 		//Get user rating for the movie
 		UserRating[] userRatings = restTemplate.getForObject(
-				"http://rating-details.local.pcfdev.io/jparating/getrating/movie/" + movieId, UserRating[].class);
+				"http://rating-details-service/jparating/getrating/movie/" + movieId, UserRating[].class);
 
 		// Create response
 		for(UserRating userRating:userRatings) {
@@ -41,7 +41,7 @@ public class MovieCatalogServiceImpl implements MovieCatalogService{
 			usersRating.setRatingDesc(userRating.getRatingComments());
 		
 			//Get user details
-			UserDetails userDetails = restTemplate.getForObject("http://user-details.local.pcfdev.io/jpausers/" + userRating.getUserId(), UserDetails.class);
+			UserDetails userDetails = restTemplate.getForObject("http://user-details-service/jpausers/" + userRating.getUserId(), UserDetails.class);
 			usersRating.setUserName(userDetails.getUserName() + " / " + userDetails.getEmailAddress());
 			usersRating.setUserId(userDetails.getUserId());
 			
