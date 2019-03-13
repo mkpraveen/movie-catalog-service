@@ -1,13 +1,15 @@
 package org.praveenmk.microservice.learn.moviecatalogservice.service;
 
+import java.util.ArrayList;
+
 import org.praveenmk.microservice.learn.moviecatalogservice.model.MovieCatalog;
+import org.praveenmk.microservice.learn.moviecatalogservice.model.UsersRating;
+import org.praveenmk.microservice.learn.moviecatalogservice.model.external.MovieDetails;
 import org.praveenmk.microservice.learn.moviecatalogservice.model.external.UserDetails;
 import org.praveenmk.microservice.learn.moviecatalogservice.model.external.UserRating;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-
-import java.util.List;
 
 @Service("movieCatalogServiceImpl")
 public class MovieCatalogServiceImpl implements MovieCatalogService{
@@ -15,14 +17,37 @@ public class MovieCatalogServiceImpl implements MovieCatalogService{
     @Autowired
     private RestTemplate restTemplate;
 
-    public MovieCatalog getMovieCatalog(long movieId) {
-        MovieCatalog movieCatalog = new MovieCatalog();
-        List<UserRating> userRatings = restTemplate.getForObject("http://localhost:8083/jparating/getrating/movie/" + movieId, List.class);
-        //Get movie details
-        //Get user details
+	public MovieCatalog getMovieCatalog(long movieId) {
+		MovieCatalog movieCatalog = new MovieCatalog();
 
-        //Create response
+		// Get movie details
+		MovieDetails movieDetails = restTemplate
+				.getForObject("http://movie-details.local.pcfdev.io/jpamovies/" + movieId, MovieDetails.class);
+		movieCatalog.setMovieId(movieId);
+		movieCatalog.setMovieDesc(movieDetails.getMovieDescription());
+		movieCatalog.setMovieName(movieDetails.getMovieName());
+		movieCatalog.setUsersRating(new ArrayList<UsersRating>());
 
-        return  movieCatalog;
-    }
+		//Get user rating for the movie
+		UserRating[] userRatings = restTemplate.getForObject(
+				"http://rating-details.local.pcfdev.io/jparating/getrating/movie/" + movieId, UserRating[].class);
+
+		// Create response
+		for(UserRating userRating:userRatings) {
+			
+			UsersRating usersRating = new UsersRating();
+			usersRating.setRatingId(usersRating.getRatingId());
+			usersRating.setRatingNumber(userRating.getRatingNumber());
+			usersRating.setRatingDesc(userRating.getRatingComments());
+		
+			//Get user details
+			UserDetails userDetails = restTemplate.getForObject("http://user-details.local.pcfdev.io/jpausers/" + userRating.getUserId(), UserDetails.class);
+			usersRating.setUserName(userDetails.getUserName() + " / " + userDetails.getEmailAddress());
+			usersRating.setUserId(userDetails.getUserId());
+			
+			movieCatalog.getUsersRating().add(usersRating);
+			
+		}
+		return movieCatalog;
+	}
 }
